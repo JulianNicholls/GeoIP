@@ -1,82 +1,67 @@
 #!/usr/bin/env ruby -I.
 
-require 'mongo'
-require 'csv'
+require 'locations'
+require 'ips'
 
-class Locations
-  include Mongo
+class Fixnum
+  def with_commas
+    # Work through, finding...
+    # Three digit sections, preceded and followed by at least one digit and...
+    # Replace with the digits followed by a comma
 
-  FIELDS =  %w(loc_id country region city postcode latitude longitude metrocode areacode)
+    self.to_s.gsub( /(\d)(?=(\d{3})+(?!\d))/, '\\1,' )
+  end
+end
 
+class GeoIPManager
   def initialize
-    @client = MongoClient.new
-    @db = @client['GeoIP']
-    @coll = @db['locations']
+    @loc = Locations.new
+    @ips = IPRanges.new
   end
 
-  def size
-    return @coll.count
-  end
+  def manage
+    loop do
+      show_record_counts
+      print menu
+      option = gets.chomp
 
-  def insert( hash )
-    @coll.insert hash
-  end
+      case option.to_i
+      when 4 then break
 
-  def drop
-    @coll.drop
-  end
-
-  def build_from_csv( file )
-    count = 1
-
-    File.open( file ) do |file|
-      loop do
-        line = file.gets
-
-        break if line.nil?
-
-        insert_from_line( line.chomp )
-
-        print " #{count}... " if (count += 1) % 1000 == 0
-        puts if count % 10000 == 0
+      when 1 then load_locations
+      when 2 then load_ips
+      when 3 then check_ip
       end
     end
   end
 
   private
 
-  # Insert a record from a line in the CSV file, ignoring lines with invalid
-  # byte sequences.
-  def insert_from_line( line )
-    begin
-      row = line.chomp.parse_csv
-      insert record( row )
-    rescue => e
-      print '#'
-    end
+  def show_record_counts
+    printf "Locations: %9s\n", @loc.count.with_commas
+    printf "IP Ranges: %9s\n", @ips.count.with_commas
   end
 
-  def record( row )
-    Hash[FIELDS.zip row]
+  def load_locations
+    @loc.drop
+    @loc.build_from_csv( 'GeoLiteCity-Location.csv' )
+  end
+
+  def load_ips
+    @ips.drop
+    @ips.build_from_csv( 'ips.csv' )
+  end
+
+  def menu
+    %{
+(1) Load Locations.
+(2) Load IPs.
+(3) Check an IP.
+
+(4) Exit
+
+  Select: }
   end
 end
 
-loc = Locations.new
-records = loc.size
-
-if records > 0
-  print "Current: #{records}, reload? "
-
-  response = ''
-
-  loop do
-    response = gets.chomp.upcase
-    break if 'YN'.include? response
-  end
-
-  exit unless response == 'Y'
-
-  loc.drop
-end
-
-loc.build_from_csv( 'GeoLiteCity-Location.csv' )
+GeoIPManager.new.manage
