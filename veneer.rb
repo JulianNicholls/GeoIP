@@ -13,35 +13,39 @@ class MongoVeneer
   def initialize
     @client = MongoClient.new
     @db     = @client['GeoIP']
+    @cached = []
   end
 
   def count( opts = {} )
+    flush_inserts
+
     return @coll.count( opts )
   end
 
-  def insert( hash )
-    @coll.insert hash
+  def insert( hash_or_array )
+    @coll.insert hash_or_array
   end
 
   def drop
     @coll.drop
   end
 
-  def build_from_csv( file )
+  def build_from_csv( filename )
     records = 1
 
-    File.open( file ) do |file|
-      loop do
-        line = file.gets
+    File.open( filename ) do |file|
+      print "Reading #{filename}... "
+      lines = file.readlines
 
-        break if line.nil?
-
+      lines.each do |line|
         insert_from_line( line.chomp )
 
         print " #{records}... " if (records += 1) % 1000 == 0
         puts if records % 10000 == 0
       end
     end
+
+    flush_inserts
   end
 
   protected
@@ -51,13 +55,20 @@ class MongoVeneer
   def insert_from_line( line )
     begin
       row = line.chomp.parse_csv
-      insert record( row )
+      @cached << record( row )
     rescue => e
       print '#'
     end
+
+    flush_inserts if @cached.size >= 1000
   end
 
   def record( row )
     Hash[self.class.fields.zip row]
+  end
+
+  def flush_inserts
+    insert( @cached ) if @cached.size > 0
+    @cached = []
   end
 end
