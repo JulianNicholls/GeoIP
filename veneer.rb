@@ -30,6 +30,10 @@ class MongoVeneer
     @coll.drop
   end
 
+  def find( selector = {}, opts = {} )
+    @coll.find selector, opts
+  end
+
   def build_from_csv( filename )
     records = 1
 
@@ -37,8 +41,10 @@ class MongoVeneer
       print "Reading #{filename}... "
       lines = file.readlines
 
+      puts "#{lines.size} Lines"
+
       lines.each do |line|
-        insert_from_line( line.chomp )
+        insert_from_line( line.chomp.encode( 'UTF-8', invalid: :replace ) )
 
         print " #{records}... " if (records += 1) % 1000 == 0
         puts if records % 10000 == 0
