@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby -I.
 
 require 'locations'
-require 'ips'
+require 'ipranges'
+require 'ipholder'
 
 class Fixnum
   def with_commas

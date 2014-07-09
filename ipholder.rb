@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby -I. -w
 
-class IPConverter
+class IPHolder
   attr_reader :parts, :numeric
 
   def initialize( input )
@@ -47,13 +47,13 @@ class IPConverter
   end
 
   def to_s
-    "IP: #{ip}, Number: #{numeric}"
+    "IP: #{ip}, Numeric: #{numeric}"
   end
 end
 
 if $PROGRAM_NAME == __FILE__
-  ip1 = IPConverter.new( ARGV[0] )
-  ip2 = ARGV[1] ? IPConverter.new( ARGV[1] ) : nil
+  ip1 = IPHolder.new( ARGV[0] )
+  ip2 = ARGV[1] ? IPHolder.new( ARGV[1] ) : nil
 
   if ip2.nil?
     puts ip1
