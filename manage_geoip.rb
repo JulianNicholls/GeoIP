@@ -98,26 +98,23 @@ Select: }
   def ip_data( ip )
     num_s, num_e = ip['num_start'], ip['num_end']
     %{
-Range:    #{num_s} - #{num_e} (#{(num_e - num_s + 1).with_commas} Addressses)
-IP:       #{ip['ip_start']} - #{ip['ip_end']}
+Range:    #{num_s.with_commas} - #{num_e.with_commas}
+IP:       #{ip['ip_start']} - #{ip['ip_end']} (#{(num_e - num_s + 1).with_commas} Addressses)
 Location: #{ip['loc_id']}
     }
   end
 
   def loc_data( loc )
-    # pp loc
-
     region    = loc.fetch( 'region', '' ).empty? ? '' : ", Region: #{loc['region']}"
     city      = loc.fetch( 'city', '' ).empty? ? '' : ", City: #{loc['city']}"
     postcode  = loc.fetch( 'postcode', '' ).empty? ? '' : "Postcode: #{loc['postcode']}"
-    metrocode = loc.fetch( 'metrocode', '' ).empty? ? '' : ", Metro Code: #{loc['metrocode']}"
-    areacode  = loc.fetch( 'areacode', '' ).empty? ? '' : ", Area Code: #{loc['areacode']}"
+    metrocode = loc.fetch( 'metrocode', '' ).empty? ? '' : ", Metro: #{loc['metrocode']}"
+    areacode  = loc.fetch( 'areacode', '' ).empty? ? '' : ", Tel: #{loc['areacode']}"
 
     %{
-ID:       #{loc['loc_id']}
 Lat Long: #{lat_long loc['lat_long']}
 Location  Country: #{loc['country']}#{region}#{city}
-Postal:   #{postcode}#{metrocode}#{areacode}
+Postal    #{postcode}#{metrocode}#{areacode}
     }
   end
 
