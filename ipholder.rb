@@ -13,14 +13,14 @@ class IPHolder
   end
 
   def interpret_from_num( input )
-    @parts = []
+    parts = []
 
     4.times do
-      @parts << (input % 256)
+      parts << (input % 256)
       input /= 256
     end
 
-    @parts.reverse
+    parts.reverse
   end
 
   def interpret_from_text( input )
@@ -30,24 +30,24 @@ class IPHolder
       @parts    = interpret_from_num( input.to_i )
       input.to_i
     else
-      @parts    = sections
+      @parts    = sections.map( &:to_i )
       total     = 0
 
       @parts.each do |part|
         total *= 256
-        total += part.to_i
+        total += part
       end
 
       total
     end
   end
 
-  def ip
+  def dotted
     @parts.join '.'
   end
 
   def to_s
-    "IP: #{ip}, Numeric: #{numeric}"
+    "IP: #{dotted}, Numeric: #{numeric}"
   end
 end
 
@@ -58,6 +58,6 @@ if $PROGRAM_NAME == __FILE__
   if ip2.nil?
     puts ip1
   else
-    puts "#{ip1.ip} - #{ip2.ip}, #{ip1.numeric} - #{ip2.numeric}"
+    puts "#{ip1.dotted} - #{ip2.dotted}, #{ip1.numeric} - #{ip2.numeric}"
   end
 end
