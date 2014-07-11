@@ -21,7 +21,7 @@ class Locations < MongoVeneer
 
     convert_lat_long
 
-    @record.delete_if { |k, v| v.nil? }
+    @record.delete_if { |_, v| v.nil? }
 
     @record
   end
